@@ -14,9 +14,10 @@
 
 package pools
 
-import "fmt"
-
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // PanicError converts an panic to error.
 type PanicError struct{ Err interface{} }
@@ -102,7 +103,6 @@ func (w *worker) Start() {
 			default:
 			}
 
-			// fmt.Printf("Worker[%d]: exit...\n", w.id)
 			w.pool.terminateWorker(w)
 			close(w.done)
 			return
