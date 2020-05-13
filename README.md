@@ -1,6 +1,6 @@
 # go-pools [![Build Status](https://travis-ci.org/xgfone/go-pools.svg?branch=master)](https://travis-ci.org/xgfone/go-pools) [![GoDoc](https://godoc.org/github.com/xgfone/go-pools?status.svg)](http://godoc.org/github.com/xgfone/go-pools) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/xgfone/go-pools/master/LICENSE)
 
-This package supplies some pools, such as `TaskPool`.
+This package supplies some pools, such as `BufferPool`, `BytesPool` and `TaskPool`.
 
 ## Install
 ```shell
