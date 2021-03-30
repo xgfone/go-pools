@@ -27,20 +27,21 @@ func ExampleTaskPool() {
 	}
 
 	pool := NewTaskPool(3)
+	pool.SetDefaultTask(TaskFunc(task))
 
 	// Terminate the task pool after some seconds.
 	go func() {
 		time.Sleep(time.Millisecond * 200)
-		pool.Shutdown(nil) // Return immediately.
+		pool.Shutdown(context.TODO()) // Return immediately.
 	}()
 
 	// Run the tasks in the pool.
 	r1 := pool.RunTaskFuncWithResult(task, time.Millisecond*10)
 	r2 := pool.RunTaskFuncWithResult(task, time.Millisecond*20)
 	r3 := pool.RunTaskFuncWithResult(task, time.Millisecond*30)
-	r4 := pool.RunTaskFuncWithResult(task, time.Millisecond*40)
-	r5 := pool.RunTaskFuncWithResult(task, time.Millisecond*50)
-	r6 := pool.RunTaskFuncWithResult(task, time.Millisecond*60)
+	r4 := pool.SubmitWithResult(time.Millisecond * 40)
+	r5 := pool.SubmitWithResult(time.Millisecond * 50)
+	r6 := pool.SubmitWithResult(time.Millisecond * 60)
 
 	pool.Wait() // Wait until the whole task pool exits.
 	// Or, Wait until all the task terminate.

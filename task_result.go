@@ -84,7 +84,7 @@ func (r *TaskResult) reset(pool *TaskPool, task Task, args []interface{}) {
 func (r *TaskResult) setResult(result interface{}, err error) {
 	r.err = err
 	r.res = result
-	r.cost = time.Now().Sub(r.start)
+	r.cost = time.Since(r.start)
 	close(r.done)
 
 	r.lock.RLock()

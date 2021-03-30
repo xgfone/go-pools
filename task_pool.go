@@ -55,6 +55,7 @@ type TaskPool struct {
 	handler func(*TaskResult)
 	results sync.Pool
 	hasdone uint64
+	task    Task
 
 	workers map[uint64]*worker
 	wchan   chan *worker
@@ -173,6 +174,9 @@ func (p *TaskPool) Wait() { <-p.done }
 // It does nothing by default.
 func (p *TaskPool) SetPanicHandler(h func(*TaskResult)) { p.handler = h }
 
+// SetDefaultTask sets the default task to be run..
+func (p *TaskPool) SetDefaultTask(task Task) { p.task = task }
+
 // GetPoolSize returns the size of the pool.
 func (p *TaskPool) GetPoolSize() int { return len(p.workers) }
 
@@ -186,6 +190,10 @@ func (p *TaskPool) TaskStat() (ts TaskStat) {
 }
 
 func (p *TaskPool) addTask(ctx context.Context, task Task, args ...interface{}) *TaskResult {
+	if task == nil {
+		panic("task is nil")
+	}
+
 	r := p.getTaskResult()
 	r.reset(p, task, args)
 	p.tasks <- taskCtx{ctx: ctx, task: task, args: args, result: r}
@@ -193,7 +201,31 @@ func (p *TaskPool) addTask(ctx context.Context, task Task, args ...interface{}) 
 }
 
 func (p *TaskPool) addTask2(ctx context.Context, task Task, args ...interface{}) {
+	if task == nil {
+		panic("task is nil")
+	}
 	p.tasks <- taskCtx{ctx: ctx, task: task, args: args}
+}
+
+// Submit is the same as RunTask with the default task.
+func (p *TaskPool) Submit(args ...interface{}) {
+	p.RunTask(p.task, args...)
+}
+
+// SubmitWithContext is the same as RunTaskWithContext with the default task.
+func (p *TaskPool) SubmitWithContext(ctx context.Context, args ...interface{}) {
+	p.RunTaskWithContext(ctx, p.task, args...)
+}
+
+// SubmitWithResult is the same as RunTaskWithResult with the default task.
+func (p *TaskPool) SubmitWithResult(args ...interface{}) *TaskResult {
+	return p.RunTaskWithResult(p.task, args...)
+}
+
+// SubmitWithResultAndContext is the same as RunTaskWithResultAndContext
+// with the default task.
+func (p *TaskPool) SubmitWithResultAndContext(ctx context.Context, args ...interface{}) *TaskResult {
+	return p.RunTaskWithResultAndContext(ctx, p.task, args...)
 }
 
 // RunTask starts a task to run.
