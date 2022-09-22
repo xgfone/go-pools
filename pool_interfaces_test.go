@@ -1,4 +1,4 @@
-// Copyright 2019 xgfone
+// Copyright 2022 xgfone
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package pools provides some pools, such as BufferPool, BytesPool,
-// FixedBytesPool, and TaskPool.
 package pools
+
+import "testing"
+
+func BenchmarkInterfacesPool(b *testing.B) {
+	pool := NewInterfacesPool(64)
+	pool.Put(pool.Get())
+
+	b.RunParallel(func(p *testing.PB) {
+		for p.Next() {
+			pool.Put(pool.Get())
+		}
+	})
+}
