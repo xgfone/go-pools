@@ -94,7 +94,7 @@ func NewTaskPool(workerNum int, bufferSize ...int) *TaskPool {
 func (p *TaskPool) getPanicHandler() func(*TaskResult) { return p.handler }
 func (p *TaskPool) getTaskResult() *TaskResult         { return p.results.Get().(*TaskResult) }
 func (p *TaskPool) putTaskResult(r *TaskResult)        { r.release(); p.results.Put(r) }
-func (p *TaskPool) terminateWorker(w *worker)          { atomic.AddUint64(&p.hasdone, 1) }
+func (p *TaskPool) taskIsDone(r *TaskResult)           { atomic.AddUint64(&p.hasdone, 1) }
 func (p *TaskPool) activateWorker(w *worker)           { p.wchan <- w }
 
 func (p *TaskPool) addWorkers(n int) {

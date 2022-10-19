@@ -14,15 +14,34 @@
 
 package pools
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func BenchmarkInterfacesPool(b *testing.B) {
-	pool := NewInterfacesPool(64)
-	pool.Put(pool.Get())
+	pool := NewInterfacesPool(8)
+	pool.Get().Release()
 
 	b.RunParallel(func(p *testing.PB) {
 		for p.Next() {
-			pool.Put(pool.Get())
+			pool.Get().Release()
 		}
 	})
+}
+
+func ExampleNewInterfacesPool() {
+	pool := NewInterfacesPool(8)
+
+	// Get the []interface{} object.
+	interfaces := pool.Get()
+
+	// Use []interface{} to do something.
+	fmt.Println(interfaces.Object) // interfaces.Object => []interface{}
+
+	// Release the []interface{} object into the pool.
+	interfaces.Release()
+
+	// Output:
+	// []
 }

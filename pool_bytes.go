@@ -14,8 +14,6 @@
 
 package pools
 
-import "sync"
-
 // Pre-define some bytes pools with the different capacity.
 var (
 	BytesPool64  = NewBytesPool(64)
@@ -26,11 +24,36 @@ var (
 	BytesPool2K  = NewBytesPool(2048)
 	BytesPool4K  = NewBytesPool(4096)
 	BytesPool8K  = NewBytesPool(8192)
+
+	FixedBytesPool64  = NewFixedBytesPool(64)
+	FixedBytesPool128 = NewFixedBytesPool(128)
+	FixedBytesPool256 = NewFixedBytesPool(256)
+	FixedBytesPool512 = NewFixedBytesPool(512)
+	FixedBytesPool1K  = NewFixedBytesPool(1024)
+	FixedBytesPool2K  = NewFixedBytesPool(2048)
+	FixedBytesPool4K  = NewFixedBytesPool(4096)
+	FixedBytesPool8K  = NewFixedBytesPool(8192)
 )
+
+// NewBytesPool returns a new pool based on []byte.
+func NewBytesPool(cap int) *Pool[[]byte] {
+	return NewPool(func() []byte {
+		return make([]byte, 0, cap)
+	}, func(b []byte) []byte {
+		return b[:0]
+	})
+}
+
+// NewFixedBytesPool returns a new pool based on the fixed-size []byte.
+func NewFixedBytesPool(size int) *Pool[[]byte] {
+	return New(func() []byte {
+		return make([]byte, size)
+	})
+}
 
 // GetBytes returns a bytes from the befitting pool, which can be released
 // into the original pool by calling the release function.
-func GetBytes(cap int) *Bytes {
+func GetBytes(cap int) *Object[[]byte] {
 	if cap <= 64 {
 		return BytesPool64.Get()
 	} else if cap <= 128 {
@@ -50,37 +73,24 @@ func GetBytes(cap int) *Bytes {
 	}
 }
 
-// Bytes is used to enclose the byte slice []byte.
-type Bytes struct {
-	Bytes []byte
-	pool  *BytesPool
-}
-
-// Release releases the bytes into the original pool.
-func (b *Bytes) Release() {
-	if b != nil && b.pool != nil {
-		b.pool.Put(b)
+// GetFixedBytes returns a fixed bytes from the befitting pool, which can
+// be released into the original pool by calling the release function.
+func GetFixedBytes(size int) *Object[[]byte] {
+	if size <= 64 {
+		return FixedBytesPool64.Get()
+	} else if size <= 128 {
+		return FixedBytesPool128.Get()
+	} else if size <= 256 {
+		return FixedBytesPool256.Get()
+	} else if size <= 512 {
+		return FixedBytesPool512.Get()
+	} else if size <= 1024 {
+		return FixedBytesPool1K.Get()
+	} else if size <= 2048 {
+		return FixedBytesPool2K.Get()
+	} else if size <= 4096 {
+		return FixedBytesPool4K.Get()
+	} else {
+		return FixedBytesPool8K.Get()
 	}
 }
-
-// BytesPool is the pool to allocate the bytes.
-type BytesPool struct{ pool sync.Pool }
-
-// NewBytesPool returns a new bytes pool.
-func NewBytesPool(cap int) *BytesPool {
-	pool := new(BytesPool)
-	pool.pool.New = func() interface{} {
-		return &Bytes{pool: pool, Bytes: make([]byte, 0, cap)}
-	}
-	return pool
-}
-
-// Get returns a bytes from the pool.
-func (p *BytesPool) Get() *Bytes {
-	b := p.pool.Get().(*Bytes)
-	b.Bytes = b.Bytes[:0]
-	return b
-}
-
-// Put puts the bytes back into the pool.
-func (p *BytesPool) Put(b *Bytes) { p.pool.Put(b) }

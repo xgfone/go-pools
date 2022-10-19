@@ -65,6 +65,7 @@ func (w *worker) handleTask(tc taskCtx) {
 	if tc.result != nil {
 		tc.result.setResult(result, err)
 	}
+	w.pool.taskIsDone(tc.result)
 }
 
 func (w *worker) Submit(tc taskCtx) bool {
@@ -103,12 +104,19 @@ func (w *worker) Start() {
 			default:
 			}
 
-			w.pool.terminateWorker(w)
 			close(w.done)
 			return
+
 		case tc := <-w.queue:
 			w.handleTask(tc)
-			w.pool.activateWorker(w)
+			select {
+			case <-w.exit:
+				close(w.done)
+				return
+
+			default:
+				w.pool.activateWorker(w)
+			}
 		}
 	}
 }

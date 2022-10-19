@@ -14,8 +14,6 @@
 
 package pools
 
-import "sync"
-
 // Pre-define some interfaces pools with the different capacity.
 var (
 	InterfacesPool8   = NewInterfacesPool(8)
@@ -28,9 +26,18 @@ var (
 	InterfacesPool1K  = NewInterfacesPool(1024)
 )
 
+// NewInterfacesPool returns a new pool based on []interface{}.
+func NewInterfacesPool(cap int) *Pool[[]interface{}] {
+	return NewPool(func() []interface{} {
+		return make([]interface{}, 0, cap)
+	}, func(b []interface{}) []interface{} {
+		return b[:0]
+	})
+}
+
 // GetInterfaces returns an interfaces from the befitting pool,
 // which can be released into the original pool by calling the release function.
-func GetInterfaces(cap int) *Interfaces {
+func GetInterfaces(cap int) *Object[[]interface{}] {
 	if cap <= 8 {
 		return InterfacesPool8.Get()
 	} else if cap <= 16 {
@@ -49,38 +56,3 @@ func GetInterfaces(cap int) *Interfaces {
 		return InterfacesPool1K.Get()
 	}
 }
-
-// Interfaces is used to enclose []interface.
-type Interfaces struct {
-	Interfaces []interface{}
-	pool       *InterfacesPool
-}
-
-// Release releases the interfaces into the original pool.
-func (i *Interfaces) Release() {
-	if i != nil && i.pool != nil {
-		i.pool.Put(i)
-	}
-}
-
-// InterfacesPool is the pool to allocate the interfaces.
-type InterfacesPool struct{ pool sync.Pool }
-
-// NewInterfacesPool returns a new interfaces pool.
-func NewInterfacesPool(cap int) *InterfacesPool {
-	pool := new(InterfacesPool)
-	pool.pool.New = func() interface{} {
-		return &Interfaces{pool: pool, Interfaces: make([]interface{}, 0, cap)}
-	}
-	return pool
-}
-
-// Get returns an interfaces from the pool.
-func (p *InterfacesPool) Get() *Interfaces {
-	i := p.pool.Get().(*Interfaces)
-	i.Interfaces = i.Interfaces[:0]
-	return i
-}
-
-// Put puts the interfaces back into the pool.
-func (p *InterfacesPool) Put(i *Interfaces) { p.pool.Put(i) }

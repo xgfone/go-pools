@@ -14,10 +14,7 @@
 
 package pools
 
-import (
-	"bytes"
-	"sync"
-)
+import "bytes"
 
 // Pre-define some buffer pools with the different capacity.
 var (
@@ -31,9 +28,19 @@ var (
 	BufferPool8K  = NewBufferPool(8192)
 )
 
+// NewBufferPool returns a new pool based on *bytes.Buffer.
+func NewBufferPool(cap int) *Pool[*bytes.Buffer] {
+	return NewPool(func() *bytes.Buffer {
+		return bytes.NewBuffer(make([]byte, 0, cap))
+	}, func(b *bytes.Buffer) *bytes.Buffer {
+		b.Reset()
+		return b
+	})
+}
+
 // GetBuffer returns a buffer from the befitting pool, which can be released
 // into the original pool by calling the release function.
-func GetBuffer(cap int) *Buffer {
+func GetBuffer(cap int) *Object[*bytes.Buffer] {
 	if cap <= 64 {
 		return BufferPool64.Get()
 	} else if cap <= 128 {
@@ -52,39 +59,3 @@ func GetBuffer(cap int) *Buffer {
 		return BufferPool8K.Get()
 	}
 }
-
-// Buffer is used to enclose bytes.Buffer.
-type Buffer struct {
-	*bytes.Buffer
-
-	pool *BufferPool
-}
-
-// Release releases the buffer into the original pool.
-func (b *Buffer) Release() {
-	if b != nil && b.pool != nil {
-		b.pool.Put(b)
-	}
-}
-
-// BufferPool is the pool to allocate the Buffer.
-type BufferPool struct{ pool sync.Pool }
-
-// NewBufferPool returns a new buffer pool.
-func NewBufferPool(cap int) *BufferPool {
-	pool := new(BufferPool)
-	pool.pool.New = func() interface{} {
-		return &Buffer{pool: pool, Buffer: bytes.NewBuffer(make([]byte, 0, cap))}
-	}
-	return pool
-}
-
-// Get returns a buffer from the pool.
-func (p *BufferPool) Get() *Buffer {
-	buf := p.pool.Get().(*Buffer)
-	buf.Reset()
-	return buf
-}
-
-// Put puts the buffer back into the pool.
-func (p *BufferPool) Put(b *Buffer) { p.pool.Put(b) }

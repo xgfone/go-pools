@@ -1,6 +1,6 @@
 # go-pools [![Build Status](https://github.com/xgfone/go-pools/actions/workflows/go.yml/badge.svg)](https://github.com/xgfone/go-pools/actions/workflows/go.yml) [![GoDoc](https://pkg.go.dev/badge/github.com/xgfone/go-pools)](https://pkg.go.dev/github.com/xgfone/go-pools) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/xgfone/go-pools/master/LICENSE)
 
-This package supporting `Go1.7+` provides some pools, such as `BufferPool`, `BytesPool`, `FixedBytesPool`, `TaskPool`, etc.
+This package provides some pools supporting `Go1.18+`, such as the object pool `Pool` and the task pool `TaskPool`, etc.
 
 
 ## Install

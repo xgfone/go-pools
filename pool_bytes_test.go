@@ -14,15 +14,47 @@
 
 package pools
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func BenchmarkBytesPool(b *testing.B) {
-	pool := NewBytesPool(64)
-	pool.Put(pool.Get())
+	pool := NewBytesPool(8)
+	pool.Get().Release()
 
 	b.RunParallel(func(p *testing.PB) {
 		for p.Next() {
-			pool.Put(pool.Get())
+			pool.Get().Release()
 		}
 	})
+}
+
+func ExampleNewBytesPool() {
+	pool := NewBytesPool(8)
+
+	// Get the []byte object.
+	bytes := pool.Get()
+
+	// Use []byte to do something.
+	fmt.Println(bytes.Object) // bytes.Object => []byte
+
+	// Release the []byte object into the pool.
+	bytes.Release()
+
+	// Output:
+	// []
+}
+
+func TestFixedBytesPool(t *testing.T) {
+	bytes := FixedBytesPool64.Get()
+	if len(bytes.Object) != 64 {
+		t.Errorf("expect %d size, but got %d", 64, len(bytes.Object))
+	}
+
+	bytes.Release()
+	bytes = FixedBytesPool64.Get()
+	if len(bytes.Object) != 64 {
+		t.Errorf("expect %d size, but got %d", 64, len(bytes.Object))
+	}
 }

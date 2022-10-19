@@ -14,28 +14,24 @@
 
 package pools
 
-import "testing"
+import "fmt"
 
-func BenchmarkFixedBytesPool(b *testing.B) {
-	pool := NewFixedBytesPool(64)
-	pool.Put(pool.Get())
-
-	b.RunParallel(func(p *testing.PB) {
-		for p.Next() {
-			pool.Put(pool.Get())
-		}
-	})
-}
-
-func TestFixedBytesPool(t *testing.T) {
-	bytes := FixedBytesPool64.Get()
-	if len(bytes.Bytes) != 64 {
-		t.Errorf("expect %d size, but got %d", 64, len(bytes.Bytes))
+func ExamplePool() {
+	type Context struct {
+		// ....
 	}
+	pool := New(func() *Context { return new(Context) })
 
-	bytes.Release()
-	bytes = FixedBytesPool64.Get()
-	if len(bytes.Bytes) != 64 {
-		t.Errorf("expect %d size, but got %d", 64, len(bytes.Bytes))
-	}
+	// Get the context from the pool.
+	ctx := pool.Get()
+
+	// Use the object as *Context to do something.
+	fmt.Println(ctx.Object) // ctx.Object => *Context
+	// ...
+
+	// Release the context into the pool.
+	ctx.Release()
+
+	// Output:
+	// &{}
 }

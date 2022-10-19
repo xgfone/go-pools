@@ -14,15 +14,34 @@
 
 package pools
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func BenchmarkBufferPool(b *testing.B) {
-	pool := NewBufferPool(64)
-	pool.Put(pool.Get())
+	pool := NewBufferPool(8)
+	pool.Get().Release()
 
 	b.RunParallel(func(p *testing.PB) {
 		for p.Next() {
-			pool.Put(pool.Get())
+			pool.Get().Release()
 		}
 	})
+}
+
+func ExampleNewBufferPool() {
+	pool := NewBufferPool(8)
+
+	// Get the *bytes.Buffer object.
+	buf := pool.Get()
+
+	// Use *bytes.Buffer to do something.
+	fmt.Println(buf.Object) // buf.Object => *bytes.Buffer
+
+	// Release the *bytes.Buffer object into the pool.
+	buf.Release()
+
+	// Output:
+	//
 }
