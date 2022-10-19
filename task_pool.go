@@ -1,4 +1,4 @@
-// Copyright 2019 xgfone
+// Copyright 2019~2022 xgfone
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ type TaskStat struct {
 }
 
 func (ts TaskStat) String() string {
-	return fmt.Sprintf("TaskPool(worker=%d, pending=%d, running=%d, done=%d)",
+	return fmt.Sprintf("TaskStat(worker=%d, pending=%d, running=%d, done=%d)",
 		ts.Worker, ts.Pending, ts.Running, ts.Done)
 }
 
