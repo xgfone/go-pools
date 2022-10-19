@@ -1,4 +1,4 @@
-// Copyright 2019 xgfone
+// Copyright 2019~2022 xgfone
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,22 +22,9 @@ import (
 
 // WaitAllTaskResults waits until all the tasks terminate.
 func WaitAllTaskResults(results ...*TaskResult) {
-	if len(results) == 0 {
-		return
-	}
-
-	var wg sync.WaitGroup
 	for _, result := range results {
-		wg.Add(1)
-		callback := result.callback
-		result.callback = func(tr *TaskResult) {
-			wg.Done()
-			if callback != nil {
-				callback(tr)
-			}
-		}
+		result.Wait()
 	}
-	wg.Wait()
 }
 
 // TaskResult represents the result of the task.
