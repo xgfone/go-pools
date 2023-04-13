@@ -22,6 +22,9 @@ type Object[T any] struct {
 	pool   *Pool[T]
 }
 
+// Get returns the field Object.
+func (o *Object[T]) Get() T { return o.Object }
+
 // Release releases the object into the original pool.
 func (o *Object[T]) Release() {
 	if o != nil && o.pool != nil {
@@ -36,9 +39,7 @@ type Pool[T any] struct {
 }
 
 // New is equal to NewPool(new, nil).
-func New[T any](new func() T) *Pool[T] {
-	return NewPool(new, nil)
-}
+func New[T any](new func() T) *Pool[T] { return NewPool(new, nil) }
 
 // NewPool returns a new pool.
 //
