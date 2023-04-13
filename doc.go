@@ -12,5 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package pools provides some pools.
+// Package pools provides an object pool based on the generics
+// supporting Go1.18+, such as Pool, CapPool.
 package pools
