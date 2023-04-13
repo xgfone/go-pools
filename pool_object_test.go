@@ -14,7 +14,11 @@
 
 package pools
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"testing"
+)
 
 func ExamplePool() {
 	type Context struct {
@@ -34,4 +38,38 @@ func ExamplePool() {
 
 	// Output:
 	// &{}
+}
+
+func TestCapPool(t *testing.T) {
+	// For *bytes.Buffer
+	bufferPool := NewCapPool(func(cap int) *bytes.Buffer {
+		return bytes.NewBuffer(make([]byte, 0, cap))
+	}, func(buf *bytes.Buffer) *bytes.Buffer {
+		buf.Reset()
+		return buf
+	})
+	if cap := bufferPool.Get(4).Object.Cap(); cap != 8 {
+		t.Errorf("expect cap %d, but got %d", 8, cap)
+	}
+	if cap := bufferPool.Get(8).Object.Cap(); cap != 8 {
+		t.Errorf("expect cap %d, but got %d", 8, cap)
+	}
+	if cap := bufferPool.Get(10).Object.Cap(); cap != 16 {
+		t.Errorf("expect cap %d, but got %d", 16, cap)
+	}
+
+	// For []byte or []interface{}
+	slicePool := NewCapPool(
+		func(cap int) []byte { return make([]byte, 0, cap) },
+		func(buf []byte) []byte { return buf[:0] },
+	)
+	if cap := cap(slicePool.Get(4).Object); cap != 8 {
+		t.Errorf("expect cap %d, but got %d", 8, cap)
+	}
+	if cap := cap(slicePool.Get(8).Object); cap != 8 {
+		t.Errorf("expect cap %d, but got %d", 8, cap)
+	}
+	if cap := cap(slicePool.Get(10).Object); cap != 16 {
+		t.Errorf("expect cap %d, but got %d", 16, cap)
+	}
 }
