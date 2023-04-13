@@ -36,7 +36,7 @@ var (
 
 	LenBytesPool = NewCapPool(
 		func(cap int) []byte { return make([]byte, cap) },
-		func(bs []byte) []byte { return bs },
+		nil, // Use the original byte slice, which is equal to func(bs []byte) []byte { return bs }
 	)
 )
 
