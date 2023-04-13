@@ -1,6 +1,6 @@
 # go-pools [![Build Status](https://github.com/xgfone/go-pools/actions/workflows/go.yml/badge.svg)](https://github.com/xgfone/go-pools/actions/workflows/go.yml) [![GoDoc](https://pkg.go.dev/badge/github.com/xgfone/go-pools)](https://pkg.go.dev/github.com/xgfone/go-pools) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/xgfone/go-pools/master/LICENSE)
 
-This package provides some pools supporting `Go1.18+`, such as the object pool `Pool` and the task pool `TaskPool`, etc.
+Provide an object pool based on the generics supporting `Go1.18+`, such as `Pool`, `CapPool`.
 
 
 ## Install
@@ -11,56 +11,46 @@ $ go get -u github.com/xgfone/go-pools
 
 ## Example
 
+#### `Pool`
 ```go
-package main
+type Context struct {
+    // ....
+}
+pool := New(func() *Context { return new(Context) })
 
-import (
-	"context"
-	"fmt"
-	"time"
+// Get the context from the pool.
+ctx := pool.Get()
 
-	"github.com/xgfone/go-pools"
+// Use the object as *Context to do something.
+fmt.Println(ctx.Object) // ctx.Object => *Context
+// ...
+
+// Release the context into the pool.
+ctx.Release()
+
+// Output:
+// &{}
+```
+
+#### `CapPool`
+```go
+// For *bytes.Buffer
+bufferPool := NewCapPool(
+    func(cap int) *bytes.Buffer { return bytes.NewBuffer(make([]byte, 0, cap)) }, // new
+    func(buf *bytes.Buffer) *bytes.Buffer { buf.Reset(); return buf },            // reset
 )
 
-func task(ctx context.Context, args ...interface{}) (interface{}, error) {
-	time.Sleep(args[0].(time.Duration))
-	return args[0], nil
-}
+buffer := bufferPool.Get(1024)
+// TODO ...
+buffer.Release()
 
-func main() {
-	pool := pools.NewTaskPool(3)
+// For a slice, such as []byte or []interface{}
+slicePool := NewCapPool(
+    func(cap int) []byte { return make([]byte, 0, cap) }, // new
+    func(buf []byte) []byte { return buf[:0] },           // reset
+)
 
-	// Terminate the task pool after some seconds.
-	go func() {
-		time.Sleep(time.Millisecond * 200)
-		pool.Shutdown(nil) // Return immediately.
-	}()
-
-	// Run the tasks in the pool.
-	r1 := pool.RunTaskFuncWithResult(task, time.Millisecond*10)
-	r2 := pool.RunTaskFuncWithResult(task, time.Millisecond*20)
-	r3 := pool.RunTaskFuncWithResult(task, time.Millisecond*30)
-	r4 := pool.RunTaskFuncWithResult(task, time.Millisecond*40)
-	r5 := pool.RunTaskFuncWithResult(task, time.Millisecond*50)
-	r6 := pool.RunTaskFuncWithResult(task, time.Millisecond*60)
-
-	pool.Wait() // Wait until the whole task pool exits.
-	// Or, Wait until all the task terminate.
-	// pools.WaitAllTaskResults(r1, r2, r3, r4, r5, r6)
-
-	fmt.Println("task1 result:", r1.Result())
-	fmt.Println("task2 result:", r2.Result())
-	fmt.Println("task3 result:", r3.Result())
-	fmt.Println("task4 result:", r4.Result())
-	fmt.Println("task5 result:", r5.Result())
-	fmt.Println("task6 result:", r6.Result())
-
-	// Output:
-	// task1 result: 10ms
-	// task2 result: 20ms
-	// task3 result: 30ms
-	// task4 result: 40ms
-	// task5 result: 50ms
-	// task6 result: 60ms
-}
+bytes := slicePool.Get(128)
+// TODO ...
+bytes.Release()
 ```
