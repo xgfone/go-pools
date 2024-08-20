@@ -58,7 +58,7 @@ func TestCapPool(t *testing.T) {
 		t.Errorf("expect cap %d, but got %d", 16, cap)
 	}
 
-	// For []byte or []interface{}
+	// For []byte or []any
 	slicePool := NewCapPool(
 		func(cap int) []byte { return make([]byte, 0, cap) },
 		func(buf []byte) []byte { return buf[:0] },

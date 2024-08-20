@@ -50,7 +50,7 @@ func NewPool[T any](new func() T, reset func(T) T) *Pool[T] {
 	}
 
 	pool := &Pool[T]{reset: reset}
-	pool.pool.New = func() interface{} { return &Object[T]{pool: pool, Object: new()} }
+	pool.pool.New = func() any { return &Object[T]{pool: pool, Object: new()} }
 	return pool
 }
 

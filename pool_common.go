@@ -16,8 +16,7 @@ package pools
 
 import "bytes"
 
-// Pre-define some object-capacity pools, such as []byte, []interface{}
-// or *bytes.Buffer.
+// Pre-define some object-capacity pools, such as []byte, []any or *bytes.Buffer.
 var (
 	BufferPool = NewCapPool(
 		func(cap int) *bytes.Buffer { return bytes.NewBuffer(make([]byte, 0, cap)) },
@@ -25,8 +24,8 @@ var (
 	)
 
 	InterfacesPool = NewCapPool(
-		func(cap int) []interface{} { return make([]interface{}, 0, cap) },
-		func(vs []interface{}) []interface{} { return vs[:0] },
+		func(cap int) []any { return make([]any, 0, cap) },
+		func(vs []any) []any { return vs[:0] },
 	)
 
 	BytesPool = NewCapPool(
@@ -48,7 +47,7 @@ func GetBuffer(cap int) *Object[*bytes.Buffer] {
 
 // GetInterfaces returns an interfaces with len==0 from the befitting pool,
 // which can be released into the original pool by calling the release function.
-func GetInterfaces(cap int) *Object[[]interface{}] {
+func GetInterfaces(cap int) *Object[[]any] {
 	return InterfacesPool.Get(cap)
 }
 
