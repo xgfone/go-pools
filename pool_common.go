@@ -16,23 +16,20 @@ package pools
 
 import "bytes"
 
-// Pre-define some object-capacity pools, such as []byte, []any or *bytes.Buffer.
 var (
+	// BufferPool is the pre-defined *bytes.Buffer pool.
 	BufferPool = NewCapPool(
 		func(cap int) *bytes.Buffer { return bytes.NewBuffer(make([]byte, 0, cap)) },
 		func(buf *bytes.Buffer) *bytes.Buffer { buf.Reset(); return buf },
 	)
 
-	InterfacesPool = NewCapPool(
-		func(cap int) []any { return make([]any, 0, cap) },
-		func(vs []any) []any { return vs[:0] },
-	)
-
+	// BytesPool is the pre-defined []byte pool.
 	BytesPool = NewCapPool(
 		func(cap int) []byte { return make([]byte, 0, cap) },
 		func(bs []byte) []byte { return bs[:0] },
 	)
 
+	// BufferPLenBytesPoolool is the pre-defined length-fixed []byte pool.
 	LenBytesPool = NewCapPool(
 		func(cap int) []byte { return make([]byte, cap) },
 		nil, // Use the original byte slice, which is equal to func(bs []byte) []byte { return bs }
@@ -43,12 +40,6 @@ var (
 // into the original pool by calling the release function.
 func GetBuffer(cap int) *Object[*bytes.Buffer] {
 	return BufferPool.Get(cap)
-}
-
-// GetInterfaces returns an interfaces with len==0 from the befitting pool,
-// which can be released into the original pool by calling the release function.
-func GetInterfaces(cap int) *Object[[]any] {
-	return InterfacesPool.Get(cap)
 }
 
 // GetBytes returns a bytes with len==0 from the befitting pool,
